@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Stroop Effect Voice Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --color-white: #ffffff;
+      --color-bg: #0f172a;
+      --color-surface: #020617;
+      --color-text: #e5e7eb;
+      --color-text-secondary: #9ca3af;
+      --color-primary: #22c55e;
+      --color-error: #ef4444;
+      --color-success: #4ade80;
+      --color-warning: #f59e0b;
+      --radius: 12px;
+      --shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.6);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--color-bg);
+      color: var(--color-text);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      margin: 0 0 10px 0;
+      font-size: 2rem;
+    }
+
+    .subtitle {
+      color: var(--color-text-secondary);
+      font-size: 0.95rem;
+      margin: 0;
+    }
+
+    .game-board {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: var(--color-surface);
+      border-radius: var(--radius);
+      border: 1px solid #1e293b;
+      box-shadow: var(--shadow);
+    }
+
+    .color-box {
+      padding: 20px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      border: 2px solid #555;
+      min-height: 80px;
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    .color-box:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .control-panel {
+      background: var(--color-surface);
+      border-radius: var(--radius);
+      border: 1px solid #1e293b;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    .control-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      background: var(--color-primary);
+      color: #000;
+    }
+
+    button:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    button.secondary {
+      background: transparent;
+      border: 1px solid #4b5563;
+      color: var(--color-text);
+    }
+
+    button.listening {
+      background: var(--color-error);
+      color: #fff;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .status {
+      font-size: 0.85rem;
+      color: var(--color-text-secondary);
+      min-height: 20px;
+    }
+
+    .result-box {
+      margin-top: 15px;
+      padding: 15px;
+      border-radius: 8px;
+      font-weight: 600;
+      display: none;
+    }
+
+    .result-box.show {
+      display: block;
+    }
+
+    .result-box.success {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--color-success);
+      border: 1px solid rgba(34, 197, 94, 0.5);
+    }
+
+    .result-box.error {
+      background: rgba(248, 113, 113, 0.15);
+      color: var(--color-error);
+      border: 1px solid rgba(248, 113, 113, 0.5);
+    }
+
+    .score {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--color-primary);
+    }
+
+    .mono {
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 8px;
+      border-radius: 6px;
+      word-break: break-word;
+      margin-top: 10px;
+    }
+
+    .instructions {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      color: var(--color-text-secondary);
+    }
+
+    .emoji {
+      font-size: 1.3rem;
+      margin-right: 8px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .screen {
+      display: none;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .welcome-screen {
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      gap: 30px;
+      min-height: 100vh;
+    }
+
+    .welcome-screen h1 {
+      font-size: 3rem;
+      margin: 0;
+      animation: slideDown 0.6s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .welcome-screen p {
+      font-size: 1.1rem;
+      color: var(--color-text-secondary);
+      max-width: 400px;
+      margin: 0;
+      animation: slideUp 0.6s ease-out 0.2s both;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .game-screen {
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 100vh;
+    }
+
+    .game-header {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .game-header h2 {
+      margin: 0 0 10px 0;
+      font-size: 1.5rem;
+    }
+
+    .sequence-display {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 15px 0;
+    }
+
+    .sequence-color {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid var(--color-text-secondary);
+      animation: popIn 0.4s ease-out;
+    }
+
+    @keyframes popIn {
+      from {
+        opacity: 0;
+        transform: scale(0.5);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .game-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .game-board {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 10px;
+      padding: 20px;
+      max-width: 500px;
+    }
+
+    .color-box {
+      padding: 15px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      border: 2px solid #555;
+      min-height: 70px;
+      text-align: center;
+      line-height: 1.3;
+      animation: slideIn 0.5s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .color-box:hover {
+      transform: scale(1.08);
+    }
+
+    .game-footer {
+      padding: 20px 20px 40px 20px;
+      text-align: center;
+      margin-top: -30px;
+    }
+
+    .status {
+      font-size: 0.9rem;
+      color: var(--color-text-secondary);
+      min-height: 20px;
+      margin-bottom: 15px;
+    }
+
+    .result-screen {
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      gap: 30px;
+      min-height: 100vh;
+    }
+
+    .result-box {
+      max-width: 500px;
+      padding: 20px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    .result-box.success {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--color-success);
+      border: 2px solid var(--color-success);
+      animation: bounceIn 0.6s ease-out;
+    }
+
+    .result-box.error {
+      background: rgba(248, 113, 113, 0.15);
+      color: var(--color-error);
+      border: 2px solid var(--color-error);
+      animation: shakeIn 0.6s ease-out;
+    }
+
+    @keyframes bounceIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.3);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes shakeIn {
+      0%, 100% {
+        opacity: 0;
+        transform: translateX(-10px);
+      }
+      50% {
+        transform: translateX(10px);
+      }
+    }
+
+    .score {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--color-primary);
+      animation: slideUp 0.6s ease-out;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      padding: 12px 32px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+      background: var(--color-primary);
+      color: #000;
+      animation: slideUp 0.6s ease-out 0.3s both;
+    }
+
+    button:hover {
+      opacity: 0.9;
+      transform: translateY(-3px);
+    }
+
+    button:active {
+      transform: translateY(-1px);
+    }
+
+    button.listening {
+      background: var(--color-error);
+      color: #fff;
+      animation: pulse 1s infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Welcome Screen -->
+    <div class="screen welcome-screen active">
+      <h1>🎮</h1>
+      <div>
+        <h2>Stroop Effect</h2>
+        <p>Read the COLOR you see, not the word written</p>
+      </div>
+      <button id="startBtn">Start Game</button>
+    </div>
+
+    <!-- Game Screen -->
+    <div class="screen game-screen">
+      <div class="game-header">
+        <h2>Identify the Colors</h2>
+        <div class="status" id="status"></div>
+      </div>
+
+      <div class="game-content">
+        <div class="game-board" id="gameBoard"></div>
+      </div>
+
+      <div class="game-footer">
+        <button id="recordBtn" disabled>🎤 Record</button>
+      </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div class="screen result-screen">
+      <div class="result-box" id="resultBox"></div>
+      <div class="score" id="score">Score: 0 / 0</div>
+      <button id="resetBtn">Play Again</button>
+    </div>
+  </div>
+
+  <script>
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const canRecognize = !!SpeechRecognition;
+
+    const startBtn = document.getElementById('startBtn');
+    const recordBtn = document.getElementById('recordBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const statusEl = document.getElementById('status');
+    const gameBoardEl = document.getElementById('gameBoard');
+    const resultBoxEl = document.getElementById('resultBox');
+    const scoreEl = document.getElementById('score');
+    const sequenceDisplayEl = document.getElementById('sequenceDisplay');
+    const welcomeScreen = document.querySelector('.welcome-screen');
+    const gameScreen = document.querySelector('.game-screen');
+    const resultScreen = document.querySelector('.result-screen');
+
+    if (!canRecognize) {
+      statusEl.textContent = 'Speech recognition not supported in this browser.';
+      recordBtn.disabled = true;
+    }
+
+    // Color palette
+    const colors = ['Red', 'Green', 'Blue', 'Yellow', 'Black'];
+    const colorHex = {
+      Red: '#ef4444',
+      Green: '#22c55e',
+      Blue: '#3b82f6',
+      Yellow: '#fbbf24',
+      Black: '#1a1a1a'
+    };
+
+    let gameStarted = false;
+    let currentIndex = 0;
+    let score = 0;
+    let total = 0;
+    let recognition = null;
+    let listening = false;
+    let gameSequence = [];
+    let userSequence = [];
+
+    function shuffle(array) {
+      return [...array].sort(() => Math.random() - 0.5);
+    }
+
+    function startGame() {
+      gameStarted = true;
+      currentIndex = 0;
+      score = 0;
+      total = 0;
+      gameSequence = [];
+
+      // Create game sequence: 5 items with unique, mismatched colors
+      let colorNames = shuffle(colors);
+      let colorValues = shuffle(colors);
+
+      // Ensure both colorNames and colorValues are unique (no repeats)
+      while (new Set(colorNames).size !== colorNames.length) {
+        colorNames = shuffle(colors);
+      }
+      while (new Set(colorValues).size !== colorValues.length) {
+        colorValues = shuffle(colors);
+      }
+
+      for (let i = 0; i < 5; i++) {
+        let textColor = colorNames[i];
+        let displayColor = colorValues[i];
+        // Ensure mismatch
+        while (textColor === displayColor) {
+          displayColor = colorValues[Math.floor(Math.random() * colorValues.length)];
+        }
+        gameSequence.push({
+          textColor: textColor,
+          displayColor: displayColor,
+          index: i
+        });
+      }
+
+      // Validate: no repeated displayed colors and no repeated text colors
+      let displayedColors = gameSequence.map(item => item.displayColor);
+      let textColors = gameSequence.map(item => item.textColor);
+      
+      if (new Set(displayedColors).size !== displayedColors.length || 
+          new Set(textColors).size !== textColors.length) {
+        // Regenerate if there are duplicates
+        return startGame();
+      }
+
+      renderBoard();
+      recordBtn.disabled = false;
+      userSequence = [];
+      statusEl.textContent = 'Click Record and read the colors in order!';
+      
+      switchScreen('game');
+      updateScore();
+    }
+
+    function switchScreen(screenName) {
+      welcomeScreen.classList.toggle('active', screenName === 'welcome');
+      gameScreen.classList.toggle('active', screenName === 'game');
+      resultScreen.classList.toggle('active', screenName === 'result');
+      
+      if (screenName === 'game') {
+        recordBtn.classList.remove('hidden');
+      } else {
+        recordBtn.classList.add('hidden');
+      }
+    }
+
+    function renderBoard() {
+      gameBoardEl.innerHTML = '';
+      gameSequence.forEach((item, idx) => {
+        const box = document.createElement('div');
+        box.className = 'color-box';
+        box.textContent = item.textColor;
+        
+        // Display color as text color only, no background
+        box.style.color = colorHex[item.displayColor];
+        box.style.backgroundColor = 'transparent';
+        box.style.cursor = 'pointer';
+        box.onclick = () => selectColor(idx, item.displayColor);
+        gameBoardEl.appendChild(box);
+      });
+    }
+
+    function compareSequences() {
+      // Compare user's entire sequence with expected sequence
+      let correctCount = 0;
+      const expectedSequence = gameSequence.map(item => item.displayColor.toLowerCase());
+      
+      const resultHtml = document.createElement('div');
+      resultHtml.innerHTML = '<strong>Sequence Comparison:</strong><br><br>';
+      
+      let errorDetails = [];
+      
+      for (let i = 0; i < Math.max(expectedSequence.length, userSequence.length); i++) {
+        const expected = expectedSequence[i] || 'missing';
+        const actual = userSequence[i] || 'missing';
+        const match = expected === actual;
+        
+        if (match && expected !== 'missing') {
+          correctCount++;
+        } else if (expected !== 'missing' || actual !== 'missing') {
+          errorDetails.push({
+            position: i + 1,
+            expected: expected,
+            actual: actual
+          });
+        }
+        
+        const status = match ? '✅' : '❌';
+        resultHtml.innerHTML += `${i + 1}. ${status} Expected: <strong>"${expected}"</strong>, You said: <strong>"${actual}"</strong><br>`;
+      }
+      
+      total = gameSequence.length;
+      score = correctCount;
+      updateScore();
+      
+      resultBoxEl.innerHTML = resultHtml.innerHTML;
+      
+      if (correctCount === gameSequence.length) {
+        resultBoxEl.className = 'result-box show success';
+        resultBoxEl.innerHTML += `<br>🎉 Perfect! You got all ${gameSequence.length} correct!`;
+      } else {
+        resultBoxEl.className = 'result-box show error';
+        resultBoxEl.innerHTML += `<br>Score: ${correctCount} / ${gameSequence.length}<br><br>`;
+        
+        // Add detailed error analysis
+        resultBoxEl.innerHTML += '<strong>Common Issues:</strong><br>';
+        
+        let hasWrongColors = errorDetails.some(e => e.actual !== 'missing' && e.expected !== e.actual);
+        let hasMissedColors = errorDetails.some(e => e.actual === 'missing');
+        let hasExtraColors = errorDetails.some(e => e.expected === 'missing');
+        
+        if (hasWrongColors) {
+          resultBoxEl.innerHTML += '• You recognized some colors incorrectly<br>';
+        }
+        if (hasMissedColors) {
+          resultBoxEl.innerHTML += '• You missed some colors in the sequence<br>';
+        }
+        if (hasExtraColors) {
+          resultBoxEl.innerHTML += '• You said extra colors that were not in the sequence<br>';
+        }
+        
+        resultBoxEl.innerHTML += '<br><strong>Tips:</strong><br>';
+        resultBoxEl.innerHTML += '• Focus on the COLOR you see, not the word<br>';
+        resultBoxEl.innerHTML += '• Speak clearly and wait for all colors to be recognized<br>';
+        resultBoxEl.innerHTML += '• Say each color once in order';
+      }
+      
+      resultBoxEl.classList.add('show');
+      endGame();
+    }
+
+    function updateScore() {
+      scoreEl.textContent = `Score: ${score} / ${total}`;
+    }
+
+    function endGame() {
+      gameStarted = false;
+      recordBtn.disabled = true;
+      switchScreen('result');
+    }
+
+    function resetGame() {
+      gameStarted = false;
+      currentIndex = 0;
+      score = 0;
+      total = 0;
+      gameSequence = [];
+      recordBtn.disabled = true;
+      recordBtn.classList.add('hidden');
+      statusEl.textContent = '';
+      gameBoardEl.innerHTML = '';
+      updateScore();
+      switchScreen('welcome');
+    }
+
+    if (canRecognize) {
+      recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      recognition.timeout = 10000;
+
+      recognition.addEventListener('start', () => {
+        listening = true;
+        recordBtn.textContent = '🛑 Stop';
+        recordBtn.classList.add('listening');
+        statusEl.textContent = 'Listening... Say the color you see!';
+        resultBoxEl.classList.remove('show');
+      });
+
+      recognition.addEventListener('end', () => {
+        listening = false;
+        recordBtn.textContent = '🎤 Record';
+        recordBtn.classList.remove('listening');
+        
+        // If user stopped early, compare what they said
+        if (gameStarted && userSequence.length > 0 && userSequence.length < gameSequence.length) {
+          compareSequences();
+        }
+      });
+
+      recognition.addEventListener('result', (event) => {
+        const transcript = (event.results[0][0].transcript || '').trim().toLowerCase();
+        
+        if (gameStarted) {
+          // Split the transcript by color words and extract recognized colors
+          const words = transcript.split(/\s+/);
+          words.forEach(word => {
+            const colorLower = word.toLowerCase();
+            // Only add if word is a recognized color
+            if (colors.some(c => c.toLowerCase() === colorLower)) {
+              userSequence.push(colorLower);
+            }
+          });
+          
+          statusEl.textContent = `Recognized: ${userSequence.join(', ')} (${userSequence.length}/${gameSequence.length})`;
+          
+          if (userSequence.length === gameSequence.length) {
+            compareSequences();
+          }
+        }
+      });
+
+      recognition.addEventListener('error', (event) => {
+        statusEl.textContent = 'Error: ' + event.error;
+        recordBtn.classList.remove('listening');
+        listening = false;
+      });
+
+      recordBtn.addEventListener('click', () => {
+        if (!listening) {
+          try {
+            recognition.start();
+          } catch (e) {
+            // Already listening
+          }
+        } else {
+          recognition.stop();
+        }
+      });
+    }
+
+    startBtn.addEventListener('click', startGame);
+    resetBtn.addEventListener('click', resetGame);
+  </script>
+</body>
+</html>
