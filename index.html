@@ -307,6 +307,16 @@
       font-size: clamp(1.2rem, 4vw, 1.5rem);
     }
 
+    .timer-display {
+      font-size: clamp(1.2rem, 4vw, 1.5rem);
+      font-weight: bold;
+      color: var(--color-primary);
+      font-family: 'Courier New', monospace;
+      letter-spacing: 2px;
+      margin: 10px 0;
+      animation: slideDown 0.6s ease-out;
+    }
+
     .sequence-display {
       display: flex;
       justify-content: center;
@@ -464,6 +474,16 @@
       animation: slideUp 0.6s ease-out;
     }
 
+    .time-display {
+      font-size: clamp(1.2rem, 4vw, 1.5rem);
+      font-weight: bold;
+      color: var(--color-primary);
+      font-family: 'Courier New', monospace;
+      letter-spacing: 1px;
+      margin-top: 10px;
+      animation: slideUp 0.6s ease-out 0.1s both;
+    }
+
     button {
       appearance: none;
       border: none;
@@ -523,6 +543,10 @@
         margin-top: -15px;
       }
 
+      .timer-display {
+        font-size: 1.2rem;
+      }
+
       button {
         padding: 10px 24px;
         font-size: 0.9rem;
@@ -541,6 +565,10 @@
         min-height: 50px;
         padding: 8px 5px;
         font-size: 0.8rem;
+      }
+
+      .timer-display {
+        font-size: 1rem;
       }
     }
   </style>
@@ -561,6 +589,7 @@
     <div class="screen game-screen">
       <div class="game-header">
         <h2>Identify the Colors</h2>
+        <div class="timer-display" id="timerDisplay">0.00s</div>
         <div class="status" id="status"></div>
       </div>
 
@@ -577,22 +606,23 @@
     <div class="screen result-screen">
       <div class="result-box" id="resultBox"></div>
       <div class="score" id="score">Score: 0 / 0</div>
+      <div class="time-display" id="timeDisplay">Time: 0.00s</div>
       <button id="resetBtn">Play Again</button>
     </div>
   </div>
 
   <!-- Audio Effects (Hidden) -->
   <audio id="soundClick" preload="auto">
-    <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSqEzPPTgjMGHmq+7OKYSwsMUKvo87pjHQU3kdny0H8sBS16yPDdkUEKE12z6OyrVhQKRp/h87tiIAUpiM3z1YU1Bhxnve3inEwLDFKs6PO6Yh0GN5HY8tF+KwUteMnw3pJBChRds+jsq1cUCkaf4fO7YyAFKYfN89WFNQYcZ73t4pxMCwxSrOjzumIdBjmR2PLRfisELHfJ8N6SQQoUXbPo7KtXFApGn+Hzu2MgBSmHzfPVhTUGHGe97eKcTAsLUqzo87piHQY5kdny0X4rBCx3yfDekkEKFF2z6OyrVxQKRp/h87tjIAQqh83z1YU1BhxnvO3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChRcs+jsq1cUCkaf4fO7YyAEKofN89WFNQYcZ7zt4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoUXLPo7KtXFApGn+Hzu2MgBCqHzfPVhTUGHGe87eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKFFyz6OyrVxQKRp/h87tjIAQph83z1YU1Bhxnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChRcs+jsq1cUCkae4fO7YyAEKofN89WFNQYcZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCqHzfPVhTUGHGe97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQqh83z1YU1Bhxnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkae4fO7YyAEKofN89WFNQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCqHzfPVhTUGG2e97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQqh83z1YU1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkae4fO7YyAEKYfN89WENQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCmHzfPVhDUGG2e97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQph83z1YQ1Bhtnve3inEsLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkaf4fO7YyAEKYfN89WENQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCmHzfPVhDUGG2e97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQph83z1YQ1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkaf4fO7YyAEKYfN89WENQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCmHzfPVhDUGG2e97eKcTAsLUqzo87piHQY5kdry0X4q" type="audio/wav">
+    <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSqEzPPTgjMGHmq+7OKYSwsMUKvo87pjHQU3kdny0H8sBS16yPDdkUEKE12z6OyrVhQKRp/h87tiIAUpiM3z1YU1Bhxnve3inEwLDFKs6PO6Yh0GN5HY8tF+KwUteMnw3pJBChRds+jsq1cUCkaf4fO7YyAFKYfN89WFNQYcZ73t4pxMCwxSrOjzumIdBjmR2PLRfisELHfJ8N6SQQoUXbPo7KtXFApGn+Hzu2MgBSmHzfPVhTUGHGe97eKcTAsLUqzo87piHQY5kdny0X4rBCx3yfDekkEKFF2z6OyrVxQKRp/h87tjIAQqh83z1YU1BhxnvO3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChRcs+jsq1cUCkaf4fO7YyAEKofN89WFNQYcZ7zt4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoUXLPo7KtXFApGn+Hzu2MgBCqHzfPVhTUGHGe87eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKFFyz6OyrVxQKRp/h87tjIAQph83z1YU1Bhxnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChRcs+jsq1cUCkae4fO7YyAEKofN89WFNQYcZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCqHzfPVhTUGHGe97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQqh83z1YU1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkae4fO7YyAEKofN89WFNQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCqHzfPVhTUGG2e97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQph83z1YQ1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkaf4fO7YyAEKYfN89WENQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCmHzfPVhDUGG2e97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQph83z1YQ1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkaf4fO7YyAEKYfN89WENQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCmHzfPVhDUGG2e97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQph83z1YQ1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkaf4fO7YyAEKYfN89WENQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCmHzfPVhDUGG2e97eKcTAsLUqzo87piHQY5kdry0X4q" type="audio/wav">
   </audio>
   <audio id="soundSuccess" preload="auto">
     <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSqEzPPTgjMGHmq+7OKYSwsMUKvo87pjHQU3kdny0H8sBS16yPDdkUEKE12z6OyrVhQKRp/h87tiIAUpiM3z1YU1Bhxnve3inEwLDFKs6PO6Yh0GN5HY8tF+KwUteMnw3pJBChRds+jsq1cUCkaf4fO7YyAFKYfN89WFNQYcZ73t4pxMCwxSrOjzumIdBjmR2PLRfisELHfJ8N6SQQoUXbPo7KtXFApGn+Hzu2MgBSmHzfPVhTUGHGe97eKcTAsLUqzo87piHQY5kdny0X4rBCx3yfDekkEKFF2z6OyrVxQKRp/h87tjIAQqh83z1YU1BhxnvO3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChRcs+jsq1cUCkaf4fO7YyAEKofN89WFNQYcZ7zt4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoUXLPo7KtXFApGn+Hzu2MgBCqHzfPVhTUGHGe87eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKFFyz6OyrVxQKRp/h87tjIAQph83z1YU1Bhxnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChRcs+jsq1cUCkae4fO7YyAEKofN89WFNQYcZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCqHzfPVhTUGHGe97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQqh83z1YU1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkae4fO7YyAEKofN89WFNQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCqHzfPVhTUGG2e97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQph83z1YQ1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkaf4fO7YyAEKYfN89WENQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCmHzfPVhDUGG2e97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQph83z1YQ1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkaf4fO7YyAEKYfN89WENQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCmHzfPVhDUGG2e97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQph83z1YQ1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkaf4fO7YyAEKYfN89WENQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCmHzfPVhDUGG2e97eKcTAsLUqzo87piHQY5kdry0X4q" type="audio/wav">
   </audio>
   <audio id="soundError" preload="auto">
-    <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSqEzPPTgjMGHmq+7OKYSwsMUKvo87pjHQU3kdny0H8sBS16yPDdkUEKE12z6OyrVhQKRp/h87tiIAUpiM3z1YU1Bhxnve3inEwLDFKs6PO6Yh0GN5HY8tF+KwUteMnw3pJBChRds+jsq1cUCkaf4fO7YyAFKYfN89WFNQYcZ73t4pxMCwxSrOjzumIdBjmR2PLRfisELHfJ8N6SQQoUXbPo7KtXFApGn+Hzu2MgBSmHzfPVhTUGHGe97eKcTAsLUqzo87piHQY5kdny0X4rBCx3yfDekkEKFF2z6OyrVxQKRp/h87tjIAQqh83z1YU1BhxnvO3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChRcs+jsq1cUCkaf4fO7YyAEKofN89WFNQYcZ7zt4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoUXLPo7KtXFApGn+Hzu2MgBCqHzfPVhTUGHGe87eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKFFyz6OyrVxQKRp/h87tjIAQph83z1YU1Bhxnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChRcs+jsq1cUCkae4fO7YyAEKofN89WFNQYcZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCqHzfPVhTUGHGe97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQqh83z1YU1Bhxnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkae4fO7YyAEKofN89WFNQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCqHzfPVhTUGG2e97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQqh83z1YU1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkaf4fO7YyAEKYfN89WENQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCmHzfPVhDUGG2e97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQph83z1YQ1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkaf4fO7YyAEKYfN89WENQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCmHzfPVhDUGG2e97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQph83z1YQ1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkaf4fO7YyAEKYfN89WENQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCmHzfPVhDUGG2e97eKcTAsLUqzo87piHQY5kdry0X4q" type="audio/wav">
+    <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSqEzPPTgjMGHmq+7OKYSwsMUKvo87pjHQU3kdny0H8sBS16yPDdkUEKE12z6OyrVhQKRp/h87tiIAUpiM3z1YU1Bhxnve3inEwLDFKs6PO6Yh0GN5HY8tF+KwUteMnw3pJBChRds+jsq1cUCkaf4fO7YyAFKYfN89WFNQYcZ73t4pxMCwxSrOjzumIdBjmR2PLRfisELHfJ8N6SQQoUXbPo7KtXFApGn+Hzu2MgBSmHzfPVhTUGHGe97eKcTAsLUqzo87piHQY5kdny0X4rBCx3yfDekkEKFF2z6OyrVxQKRp/h87tjIAQqh83z1YU1BhxnvO3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChRcs+jsq1cUCkaf4fO7YyAEKofN89WFNQYcZ7zt4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoUXLPo7KtXFApGn+Hzu2MgBCqHzfPVhTUGHGe87eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKFFyz6OyrVxQKRp/h87tjIAQph83z1YU1Bhxnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChRcs+jsq1cUCkae4fO7YyAEKofN89WFNQYcZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCqHzfPVhTUGHGe97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQqh83z1YU1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkae4fO7YyAEKofN89WFNQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCqHzfPVhTUGG2e97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQph83z1YQ1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkaf4fO7YyAEKYfN89WENQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCmHzfPVhDUGG2e97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQph83z1YQ1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkaf4fO7YyAEKYfN89WENQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCmHzfPVhDUGG2e97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQph83z1YQ1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkaf4fO7YyAEKYfN89WENQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCmHzfPVhDUGG2e97eKcTAsLUqzo87piHQY5kdry0X4q" type="audio/wav">
   </audio>
   <audio id="soundRecord" preload="auto">
-    <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSqEzPPTgjMGHmq+7OKYSwsMUKvo87pjHQU3kdny0H8sBS16yPDdkUEKE12z6OyrVhQKRp/h87tiIAUpiM3z1YU1Bhxnve3inEwLDFKs6PO6Yh0GN5HY8tF+KwUteMnw3pJBChRds+jsq1cUCkaf4fO7YyAFKYfN89WFNQYcZ73t4pxMCwxSrOjzumIdBjmR2PLRfisELHfJ8N6SQQoUXbPo7KtXFApGn+Hzu2MgBSmHzfPVhTUGHGe97eKcTAsLUqzo87piHQY5kdny0X4rBCx3yfDekkEKFF2z6OyrVxQKRp/h87tjIAQqh83z1YU1BhxnvO3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChRcs+jsq1cUCkaf4fO7YyAEKofN89WFNQYcZ7zt4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoUXLPo7KtXFApGn+Hzu2MgBCqHzfPVhTUGHGe87eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKFFyz6OyrVxQKRp/h87tjIAQph83z1YU1Bhxnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChRcs+jsq1cUCkae4fO7YyAEKofN89WFNQYcZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCqHzfPVhTUGHGe97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQqh83z1YU1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkae4fO7YyAEKofN89WFNQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCqHzfPVhTUGG2e97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQph83z1YQ1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkaf4fO7YyAEKYfN89WENQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCmHzfPVhDUGG2e97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQph83z1YQ1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkaf4fO7YyAEKYfN89WENQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCmHzfPVhDUGG2e97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQph83z1YQ1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkaf4fO7YyAEKYfN89WENQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCmHzfPVhDUGG2e97eKcTAsLUqzo87piHQY5kdry0X4q" type="audio/wav">
+    <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSqEzPPTgjMGHmq+7OKYSwsMUKvo87pjHQU3kdny0H8sBS16yPDdkUEKE12z6OyrVhQKRp/h87tiIAUpiM3z1YU1Bhxnve3inEwLDFKs6PO6Yh0GN5HY8tF+KwUteMnw3pJBChRds+jsq1cUCkaf4fO7YyAFKYfN89WFNQYcZ73t4pxMCwxSrOjzumIdBjmR2PLRfisELHfJ8N6SQQoUXbPo7KtXFApGn+Hzu2MgBSmHzfPVhTUGHGe97eKcTAsLUqzo87piHQY5kdny0X4rBCx3yfDekkEKFF2z6OyrVxQKRp/h87tiIAQqh83z1YU1BhxnvO3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChRcs+jsq1cUCkaf4fO7YyAEKofN89WFNQYcZ7zt4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoUXLPo7KtXFApGn+Hzu2MgBCqHzfPVhTUGHGe87eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKFFyz6OyrVxQKRp/h87tjIAQph83z1YU1Bhxnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChRcs+jsq1cUCkae4fO7YyAEKofN89WFNQYcZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCqHzfPVhTUGHGe97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQqh83z1YU1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkae4fO7YyAEKofN89WFNQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCqHzfPVhTUGG2e97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQph83z1YQ1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkaf4fO7YyAEKYfN89WENQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCmHzfPVhDUGG2e97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQph83z1YQ1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkaf4fO7YyAEKYfN89WENQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCmHzfPVhDUGG2e97eKcTAsLUqzo87piHQY5kdry0X4rBCx3yfDekkEKE1yz6OyrVxQKRp/h87tjIAQph83z1YQ1Bhtnve3inEwLC1Ks6PO6Yh0GOZHa8tF+KwQsd8nw3pJBChNcs+jsq1cUCkaf4fO7YyAEKYfN89WENQYbZ73t4pxMCwtSrOjzumIdBjmR2vLRfisELHfJ8N6SQQoTXLPo7KtXFApGn+Hzu2MgBCmHzfPVhDUGG2e97eKcTAsLUqzo87piHQY5kdry0X4q" type="audio/wav">
   </audio>
 
   <script>
@@ -606,6 +636,8 @@
     const gameBoardEl = document.getElementById('gameBoard');
     const resultBoxEl = document.getElementById('resultBox');
     const scoreEl = document.getElementById('score');
+    const timerDisplayEl = document.getElementById('timerDisplay');
+    const timeDisplayEl = document.getElementById('timeDisplay');
     const sequenceDisplayEl = document.getElementById('sequenceDisplay');
     const welcomeScreen = document.querySelector('.welcome-screen');
     const gameScreen = document.querySelector('.game-screen');
@@ -617,6 +649,11 @@
     const soundError = document.getElementById('soundError');
     const soundRecord = document.getElementById('soundRecord');
 
+    // Timer variables
+    let startTime = 0;
+    let timerInterval = null;
+    let elapsedTime = 0;
+
     // Sound helper function
     function playSound(sound) {
       try {
@@ -626,6 +663,40 @@
       } catch (e) {
         console.log('Audio error:', e);
       }
+    }
+
+    // Format time to display with 2 decimal places
+    function formatTime(milliseconds) {
+      const totalSeconds = milliseconds / 1000;
+      const seconds = Math.floor(totalSeconds);
+      const hundredths = Math.floor((totalSeconds - seconds) * 100);
+      return `${seconds}.${hundredths.toString().padStart(2, '0')}s`;
+    }
+
+    // Update timer display
+    function updateTimerDisplay() {
+      const currentTime = performance.now();
+      elapsedTime = currentTime - startTime;
+      timerDisplayEl.textContent = formatTime(elapsedTime);
+    }
+
+    // Start timer
+    function startTimer() {
+      startTime = performance.now();
+      elapsedTime = 0;
+      
+      // Update timer every 50ms for smooth display
+      timerInterval = setInterval(updateTimerDisplay, 50);
+    }
+
+    // Stop timer
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      // Final update to ensure accuracy
+      updateTimerDisplay();
     }
 
     if (!canRecognize) {
@@ -708,6 +779,7 @@
       
       switchScreen('game');
       updateScore();
+      startTimer(); // Start the timer
     }
 
     function switchScreen(screenName) {
@@ -813,8 +885,10 @@
     }
 
     function endGame() {
+      stopTimer(); // Stop the timer
       gameStarted = false;
       recordBtn.disabled = true;
+      timeDisplayEl.textContent = `Time: ${formatTime(elapsedTime)}`;
       switchScreen('result');
     }
 
@@ -830,7 +904,10 @@
       recordBtn.classList.add('hidden');
       statusEl.textContent = '';
       gameBoardEl.innerHTML = '';
+      timerDisplayEl.textContent = '0.00s';
+      timeDisplayEl.textContent = 'Time: 0.00s';
       updateScore();
+      stopTimer();
       switchScreen('welcome');
     }
 
